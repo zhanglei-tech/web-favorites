@@ -5,8 +5,7 @@
 
 ![](https://mmbiz.qpic.cn/sz_mmbiz_jpg/caVTCgKcsEd6MlicLcVP2JPfhqxegqRIQMaLduxcZBQNKE5qaPbibNSHFJTltW8sMxcgbl6d2RaK4cHhe3GLt02A/640?wx_fmt=jpeg&from=appmsg#imgIndex=0)
 
-****![](https://mmbiz.qpic.cn/mmbiz_jpg/caVTCgKcsEf1qsyPiaIN5FSl6wkpGPfAf2wtgmXa4607eAxRG9swE3uYICcvEppJsHfKcluNXIyvOsibyt3kngJw/640?wx_fmt=jpeg#imgIndex=1)
-**常见系统简介******
+## 常见系统简介
 
 **经常遇到很多系统，比如：MES、ERP、WMS、OMS、CRM、SCM、SRM、PLM，这些都是什么系统？有什么功能和作用？它们之间的关系是怎样的？**  
 
