@@ -71,5 +71,8 @@ apt install nvidia-container-toolkit -f
 
 ```shell
 # 配置 Docker 运行时以使用 NVIDIA Container Toolkit
-nvidia-container-cli configure --runtime=docker
+nvidia-ctk runtime configure --runtime=docker
+
+# 重启 docker 服务
+systemctl restart docker
 ```
