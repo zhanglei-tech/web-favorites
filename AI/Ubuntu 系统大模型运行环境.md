@@ -76,3 +76,10 @@ nvidia-ctk runtime configure --runtime=docker
 # 重启 docker 服务
 systemctl restart docker
 ```
+# 4. 查看显卡运行情况
+
+执行 shell 命令
+
+```shell
+nvidia-smi
+```
