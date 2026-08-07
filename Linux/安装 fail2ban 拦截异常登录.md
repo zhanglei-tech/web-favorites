@@ -1,33 +1,126 @@
-# ubuantu系统安装fail2ban
-```shell
-apt install fail2ban
-```
-# 创建 jail.local
-```shell
-cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
-```
-Fail2ban 在启动时，会先读取 `jail.conf` 中的默认设置，然后再读取 `jail.local` 中的设置。如果在这两个文件中发现了相同的配置项，系统会优先使用 `jail.local` 里的设置。只需要在 `jail.local` 中写入你希望改变的那部分参数即可，其余未修改的参数会自动继承 `jail.conf` 的默认值，既安全又方便管理。
-# 添加 ssh规则
-编辑 `jail.local`，添加或修改以下内容：
-```shell
-[sshd] 
-enabled = true 
-port = 22222 # 如果你改了端口，这里要对应修改 
-filter = sshd 
-logpath = /var/log/auth.log # CentOS 可能是 /var/log/secure 
-maxretry = 5 # 允许输错5次 
-bantime = 3600 # 封禁时间(秒)，这里设为1小时 
-findtime = 600 # 检测时间窗口(秒)
-```
-bantime 可以设置为1m：1 个月；1 y：1 年；-1：永久
+# Ubuntu 安装 fail2ban 拦截 SSH 异常登录
 
-## 添加 ip 白名单
-在/etc/fail2ban/jail.local中找到 `[DEFAULT]` 部分，然后找到以 `ignoreip` 开头的行。
-- **如果该行被 `#` 注释掉了**，请先去掉 `#`。
-- **在现有 IP 列表的末尾**，加上一个空格，然后粘贴你的 IP 地址
+适用场景：Ubuntu 或 Debian 服务器，通过 fail2ban 自动封禁 SSH 暴力破解来源 IP。
 
-# 查看 fail2ban拦截情况
-执行命令
+## 安装
+
 ```shell
-fail2ban-client status sshd
+sudo apt update
+sudo apt install -y fail2ban
 ```
+
+## 创建本地配置
+
+不建议直接改 `/etc/fail2ban/jail.conf`。更稳妥的做法是新建 `/etc/fail2ban/jail.local`，只写你需要覆盖的参数，方便后续升级和排查。
+
+```shell
+sudo nano /etc/fail2ban/jail.local
+```
+
+写入以下内容：
+
+```ini
+[DEFAULT]
+# 白名单 IP，多个地址用空格分隔
+ignoreip = 127.0.0.1/8 ::1
+
+# 10 分钟内失败 5 次则封禁 1 小时
+findtime = 10m
+maxretry = 5
+bantime = 1h
+
+[sshd]
+enabled = true
+port = 22222
+filter = sshd
+logpath = /var/log/auth.log
+```
+
+说明：
+
+- `port` 要和 `/etc/ssh/sshd_config` 里的实际 SSH 端口一致。
+- Ubuntu/Debian 通常使用 `/var/log/auth.log`。
+- 如果系统没有这个日志文件，可以改为使用 systemd 日志：
+
+```ini
+[sshd]
+enabled = true
+port = 22222
+backend = systemd
+```
+
+## 启动并设置开机自启
+
+```shell
+sudo systemctl enable --now fail2ban
+sudo systemctl restart fail2ban
+```
+
+## 检查配置是否生效
+
+```shell
+sudo fail2ban-client ping
+sudo fail2ban-client status
+sudo fail2ban-client status sshd
+sudo systemctl status fail2ban
+```
+
+重点关注：
+
+- `Status` 中是否能看到 `sshd` jail。
+- `Currently banned` 是否大于 `0`。
+- `Banned IP list` 中是否出现被封禁的来源地址。
+
+## 添加 IP 白名单
+
+在 `/etc/fail2ban/jail.local` 的 `[DEFAULT]` 段里追加自己的固定出口 IP，避免误封：
+
+```ini
+[DEFAULT]
+ignoreip = 127.0.0.1/8 ::1 1.2.3.4
+```
+
+如果有多个白名单 IP，继续用空格分隔：
+
+```ini
+ignoreip = 127.0.0.1/8 ::1 1.2.3.4 5.6.7.8
+```
+
+修改后重启：
+
+```shell
+sudo systemctl restart fail2ban
+```
+
+## 常用命令
+
+查看 `sshd` 规则状态：
+
+```shell
+sudo fail2ban-client status sshd
+```
+
+手动解封某个 IP：
+
+```shell
+sudo fail2ban-client set sshd unbanip 1.2.3.4
+```
+
+重新加载配置：
+
+```shell
+sudo fail2ban-client reload
+```
+
+## 参数说明
+
+- `findtime = 10m`：统计失败次数的时间窗口是 10 分钟。
+- `maxretry = 5`：10 分钟内失败 5 次就会触发封禁。
+- `bantime = 1h`：封禁 1 小时。
+- `bantime = -1`：永久封禁。
+
+注意：
+
+- `1m` 表示 1 分钟，不是 1 个月。
+- 如果要表示 1 个月，建议写成 `1mo`。
+- 常见写法还有 `30m`、`12h`、`1d`、`1w`。
