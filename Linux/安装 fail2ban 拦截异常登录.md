@@ -19,4 +19,4 @@ maxretry = 5 # 允许输错5次
 bantime = 3600 # 封禁时间(秒)，这里设为1小时 
 findtime = 600 # 检测时间窗口(秒)
 ```
-bantimm
+bantime 可以设置为
