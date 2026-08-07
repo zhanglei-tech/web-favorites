@@ -19,4 +19,15 @@ maxretry = 5 # 允许输错5次
 bantime = 3600 # 封禁时间(秒)，这里设为1小时 
 findtime = 600 # 检测时间窗口(秒)
 ```
-bantime 可以设置为
+bantime 可以设置为1m：1 个月；1 y：1 年；-1：永久
+
+## 添加 ip 白名单
+在/etc/fail2ban/jail.local中找到 `[DEFAULT]` 部分，然后找到以 `ignoreip` 开头的行。
+- **如果该行被 `#` 注释掉了**，请先去掉 `#`。
+- **在现有 IP 列表的末尾**，加上一个空格，然后粘贴你的 IP 地址
+
+# 查看 fail2ban拦截情况
+执行命令
+```shell
+
+```
