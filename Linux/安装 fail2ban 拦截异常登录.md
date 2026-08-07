@@ -29,5 +29,5 @@ bantime 可以设置为1m：1 个月；1 y：1 年；-1：永久
 # 查看 fail2ban拦截情况
 执行命令
 ```shell
-
+fail2ban-client status sshd
 ```
