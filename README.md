@@ -4,20 +4,20 @@
 
 ## 仓库概览
 
-| 分类 | 数量 | 说明 |
-| --- | ---: | --- |
-| [AI](./AI) | 5 | 大模型部署、问答平台、Dify、运行环境 |
-| [Docker](./Docker) | 2 | 离线部署与容器应用 |
-| [Git](./Git) | 2 | Git Flow 与 CI/CD 自动化部署 |
-| [Linux](./Linux) | 14 | 服务器初始化、存储、JDK、Neo4j、SSH、安全加固 |
-| [MacOS](./MacOS) | 1 | iTerm2 与 oh-my-zsh 配置 |
-| [windows](./windows) | 1 | 远程桌面端口调整 |
-| [业务知识](./业务知识) | 4 | MES、ERP、SCM 等工业与企业系统知识 |
-| [开发技术](./开发技术) | 3 | RTSP、fastjson、代码命名规范 |
-| [开发环境](./开发环境) | 3 | GB28181/WVP、npm 镜像源、OPC/DCOM |
-| [群辉](./群辉) | 2 | 群晖 Docker 部署实践 |
-| [其它](./其它) | 2 | Overleaf 使用相关 |
-| [attachment](./attachment) | 附件 | 图片、脚本和配置文件 |
+| 分类                         |  数量 | 说明                           |
+| -------------------------- | --: | ---------------------------- |
+| [AI](./AI)                 |   5 | 大模型部署、问答平台、Dify、运行环境         |
+| [Docker](./Docker)         |   2 | 离线部署与容器应用                    |
+| [Git](./Git)               |   2 | Git Flow 与 CI/CD 自动化部署       |
+| [Linux](./Linux)           |  14 | 服务器初始化、存储、JDK、Neo4j、SSH、安全加固 |
+| [MacOS](./MacOS)           |   1 | iTerm2 与 oh-my-zsh 配置        |
+| [windows](./windows)       |   1 | 远程桌面端口调整                     |
+| [业务知识](./业务知识)             |   4 | MES、ERP、SCM 等工业与企业系统知识       |
+| [开发技术](./开发技术)             |   3 | RTSP、fastjson、代码命名规范         |
+| [开发环境](./开发环境)             |   3 | GB28181/WVP、npm 镜像源、OPC/DCOM |
+| [群辉](./群辉)                 |   2 | 群晖 Docker 部署实践               |
+| [其它](./其它)                 |   2 | Overleaf 使用相关                |
+| [attachment](./attachment) |  附件 | 图片、脚本和配置文件                   |
 
 ## 推荐入口
 
