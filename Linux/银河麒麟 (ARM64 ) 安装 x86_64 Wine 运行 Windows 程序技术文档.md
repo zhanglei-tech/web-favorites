@@ -26,12 +26,13 @@
 
 ```bash
 # 1. 卸载原生 ARM64 Wine 及相关冲突包
-sudo apt purge wine wine64 wine-stable wine-pixelos
-sudo apt autoremove
+sudo apt purge --auto-remove wine wine64 wine-stable wine-pixelos
 
-# 2. 清理可能残留的配置
-sudo rm -rf /var/lib/dpkg/info/wine*
+# 2. 如需彻底清理用户 Wine 前缀（可选）
+sudo rm -rf ~/.wine
 ```
+
+> ⚠️ **警告**：请勿手动删除 `/var/lib/dpkg/info/` 下的文件，这会损坏 dpkg 包管理器数据库，导致后续 apt/dpkg 操作异常。
 
 ---
 
@@ -48,9 +49,11 @@ sudo wget https://ryanfortner.github.io/box64-debs/box64.list -O /etc/apt/source
 # 2. 导入仓库签名密钥
 wget -qO- https://ryanfortner.github.io/box64-debs/KEY.gpg | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/box64-debs-archive-keyring.gpg
 
-
 # 3. 更新软件包列表并安装 Box64
-sudo apt update && sudo apt install box64-arm64 -y
+sudo apt update
+# 先确认真实包名（ryanfortner 仓库通常为 box64，而非 box64-arm64）
+apt-cache search box64
+sudo apt install box64 -y
 ```
 
 安装完成后，直接验证版本即可：
@@ -75,16 +78,16 @@ sudo dpkg -i box64_*_arm64.deb
 
 ### ✅ 安装后的必要检查
 
-Box64 依赖 Linux 内核的 `binfmt_misc` 机制来自动识别 x86_64 程序。首次安装后，建议确认该机制处于启用状态：
+Box64 依赖 Linux 内核的 `binfmt_misc` 机制来自动识别 x86_64 程序。**本文档全程使用 `box64` 显式前缀运行 Wine（如 `box64 wine ...`），不依赖 binfmt_misc 自动触发**，因此 `binfmt_misc` 不是本方案的必要步骤。如需确认系统机制状态，可执行：
 
 ```bash
 cat /proc/sys/fs/binfmt_misc/status
 ```
-如果输出不是 `enabled`，可以手动触发一次：
+
+如果输出不是 `enabled`，可手动触发：
 ```bash
 sudo systemctl restart systemd-binfmt
 ```
-这一步通过源码编译安装时也是官方要求执行的。
 
 完成以上任一方式的安装后，就可以按照文档继续后面的 Wine 安装步骤了。
 
@@ -96,14 +99,37 @@ sudo systemctl restart systemd-binfmt
 
 **解决方案：** 使用专为较老 glibc 版本编译的第三方包，例如 **`wine-pixelos`**（专为 Debian glibc 2.31 构建）。
 
-### 4.1 解决基础依赖
-麒麟系统的较新软件源中可能移除了旧版基础库，直接安装 x86 Wine 会报缺 `libncurses5` 和 `libtinfo5`。需先手动补齐：
+### 4.1 开启 amd64 多架构支持（必须）
+
+在安装 amd64 版 Wine 之前，必须先向系统添加 amd64 架构，否则 apt 只会去 arm64 源中解析依赖，导致 `--fix-broken install` 安装错误的 arm64 库，Wine 无法启动。
+
 ```bash
-# 注意：必须下载 arm64 架构的 deb 包（如从 OpenKylin 源下载）
-sudo dpkg -i libncurses5_*.deb libtinfo5_*.deb
+# 1. 添加 amd64 架构
+sudo dpkg --add-architecture amd64
+
+# 2. 更新软件包列表
+sudo apt update
+
+# 3. 验证架构已添加
+dpkg --print-foreign-architectures
 ```
 
-### 4.2 安装 x86_64 Wine 包
+> ⚠️ 这一步是强制安装 amd64 Wine 包的前提，请不要跳过。
+
+### 4.2 解决基础依赖
+
+麒麟系统的较新软件源中可能移除了旧版基础库，直接安装 x86 Wine 会报缺 `libncurses5` 和 `libtinfo5`。需先手动补齐 **amd64 架构**的库（x86_64 Wine 二进制需要 amd64 版共享库，arm64 版库无效）：
+
+```bash
+# 通过 amd64 源安装（推荐）
+sudo apt install libncurses5:amd64 libtinfo5:amd64
+
+# 或手动下载 amd64 版 deb 包后安装：
+# sudo dpkg -i libncurses5_*_amd64.deb libtinfo5_*_amd64.deb
+```
+
+### 4.3 安装 x86_64 Wine 包
+
 1. 从 GitHub (`PixelOS1/debian-wine-builds`) 下载适用于 **`amd64`** 架构的 `.deb` 安装包。
 2. 使用 `dpkg` 强制安装（忽略架构警告）：
    ```bash
@@ -120,9 +146,13 @@ sudo dpkg -i libncurses5_*.deb libtinfo5_*.deb
 ## ⚙️ 5. 初始化与运行测试
 
 ### 5.1 初始化 Wine 环境
-**注意：** 由于安装的是 x86_64 架构的 Wine，**必须**显式调用 `box64` 才能启动，否则会报 `Exec format error`。
+**注意：** 由于安装的是 x86_64 架构的 Wine，**必须**显式调用 `box64` 才能启动，否则会报 `Exec format error`。建议首次运行前显式指定 64 位前缀架构：
 
 ```bash
+# 显式指定 64 位 Wine 前缀
+export WINEARCH=win64
+export WINEPREFIX="$HOME/.wine"
+
 # 初始化 Wine 配置（在用户目录创建 .wine 文件夹）
 box64 wine winecfg
 ```
@@ -137,6 +167,17 @@ box64 wine YourApp.exe
 ```
 *(如果程序路径包含空格，请使用英文双引号将路径括起来)*
 
+**日志排查：** 若程序启动失败，可开启 Wine 调试日志定位问题：
+```bash
+WINEDEBUG=+all box64 wine YourApp.exe 2>&1 | tee wine.log
+```
+
+**wineserver 异常处理：** Wine 依赖 `wineserver` 进程，Box64 下 wineserver 本身也是 x86_64 二进制，若出现服务器异常，可先终止旧进程再重试：
+```bash
+box64 wineserver -k
+box64 wine YourApp.exe
+```
+
 ---
 
 ## 🚨 6. 常见问题排错 (Troubleshooting)
@@ -148,6 +189,7 @@ box64 wine YourApp.exe
 | 依赖冲突，无法安装             | 系统中同时存在原生 Wine 和 x86 Wine 的依赖库。               | 彻底清理旧包，使用 `sudo apt --fix-broken install` 自动解决依赖链。 |
 | 中文乱码                       | Wine 缺少中文字体映射。                                      | 将 Windows 的 `C:\Windows\Fonts` 下的字体（如 `msyh.ttc`）复制到 `~/.wine/drive_c/windows/Fonts/` 目录下。 |
 | 缺少 DLL 或运行库              | 软件依赖 VC++ 或 .NET 环境。                                 | 安装 `winetricks`，执行 `box64 winetricks vcrun2019` 或 `dotnet48` 安装缺失组件。 |
+| `error while loading shared libraries` | 缺少 amd64 版运行库，或错误安装了 arm64 版依赖库。 | 确保已执行 `dpkg --add-architecture amd64`，并通过 `:amd64` 后缀安装对应库。 |
 
 ---
 
@@ -158,3 +200,5 @@ box64 wine YourApp.exe
 **Hangover** 是一个深度集成了 Wine 和指令翻译器（如 FEX-Emu）的开源项目。它的核心优势在于**只翻译应用程序本身**，而不翻译整个 Wine 环境，运行效率极高。
 
 如果 `wine-pixelos + box64` 方案在运行特定软件时遇到无法解决的崩溃问题，强烈建议前往 [Hangover GitHub 仓库](https://github.com/AndreRH/hangover/releases) 下载 arm64 版本的 `.deb` 包进行平替尝试。安装后通常可直接使用 `wine` 命令运行程序，无需手动加上 `box64` 前缀。
+
+> ⚠️ **注意**：Hangover 依赖 FEX-Emu，与 Box64 不能混用。切换到 Hangover 前，建议先彻底卸载 Box64 和 x86_64 Wine，避免两套环境冲突。
