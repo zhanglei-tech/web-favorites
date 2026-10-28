@@ -124,7 +124,14 @@ sudo apt install libncurses5:amd64 libtinfo5:amd64
 
 ### 4.3 安装 x86_64 Wine 包
 
-1. 从 GitHub (`PixelOS1/debian-wine-builds`) 下载适用于 **`amd64`** 架构的 `.deb` 安装包。
+1. **下载 amd64 版 `.deb` 包**  
+   前往 [PixelOS1/debian-wine-builds Releases 页面](https://github.com/PixelOS1/debian-wine-builds/releases)，下载适用于 **`amd64`** 架构的 Wine `.deb` 安装包，文件名通常形如 `wine-pixelos_<版本>_amd64.deb`。
+
+   也可直接在终端使用 `wget` 下载（将 `<VERSION>` 替换为实际版本号）：
+   ```bash
+   wget https://github.com/PixelOS1/debian-wine-builds/releases/download/<VERSION>/wine-pixelos_<VERSION>_amd64.deb
+   ```
+
 2. 使用 `dpkg` 强制安装（忽略架构警告）：
    ```bash
    sudo dpkg --force-architecture -i wine-pixelos_*.deb
